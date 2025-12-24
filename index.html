@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate 20-Recipe Generator</title>
+    <style>
+        :root {
+            --blue: #1e3799;
+            --light-blue: #4a69bd;
+            --accent: #f6b93b;
+            --dark: #2f3542;
+            /* New deep blue background color */
+            --bg-blue: #0a3d62; 
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Changed background to solid blue */
+            background-color: var(--bg-blue);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .header { text-align: center; color: white; margin-bottom: 20px; }
+
+        .filter-group {
+            margin-bottom: 25px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--accent);
+            color: var(--dark);
+            border-color: var(--accent);
+        }
+
+        .recipe-card {
+            background: white;
+            max-width: 600px;
+            width: 100%;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cat-tag {
+            background: var(--light-blue);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        h2 { margin: 15px 0; font-size: 2rem; color: var(--bg-blue); }
+
+        .recipe-content h3 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            color: var(--blue);
+        }
+
+        .ingredients { margin-bottom: 20px; line-height: 1.6; }
+        .procedure { 
+            background: #f9f9f9; 
+            padding: 15px; 
+            border-radius: 8px; 
+            font-style: italic;
+            border-left: 4px solid var(--accent);
+        }
+
+        /* Styling for the new "Another One" button */
+        .refresh-btn {
+            margin-top: 25px;
+            width: 100%;
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: var(--dark);
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Global Chef Generator</h1>
+        <p>Select a category and get a random meal idea</p>
+    </div>
+
+    <div class="filter-group">
+        <button class="filter-btn active" onclick="setCategory('All', this)">All</button>
+        <button class="filter-btn" onclick="setCategory('Appetizer', this)">Appetizers</button>
+        <button class="filter-btn" onclick="setCategory('Breakfast', this)">Breakfast</button>
+        <button class="filter-btn" onclick="setCategory('Lunch', this)">Lunch</button>
+        <button class="filter-btn" onclick="setCategory('Dinner', this)">Dinner</button>
+    </div>
+
+    <div class="recipe-card" id="recipe-display">
+        </div>
+
+    <script>
+        const recipes = [
+            // APPETIZERS
+            { title: "Bruschetta", cat: "Appetizer", ing: ["Baguette", "Tomatoes", "Garlic", "Basil"], proc: "Toast bread slices. Top with chopped tomatoes, garlic, and basil drizzled in oil." },
+            { title: "Stuffed Mushrooms", cat: "Appetizer", ing: ["Mushrooms", "Cream Cheese", "Breadcrumbs"], proc: "Fill mushroom caps with seasoned cream cheese. Sprinkle breadcrumbs and bake at 375°F." },
+            { title: "Deviled Eggs", cat: "Appetizer", ing: ["Eggs", "Mayo", "Mustard", "Paprika"], proc: "Boil eggs. Mix yolks with mayo and mustard. Pipe back into whites and dust with paprika." },
+            { title: "Chicken Wings", cat: "Appetizer", ing: ["Wings", "Buffalo Sauce", "Butter"], proc: "Fry or bake wings until crispy. Toss in a mixture of melted butter and hot sauce." },
+            { title: "Spring Rolls", cat: "Appetizer", ing: ["Rice Paper", "Shrimp", "Carrots", "Mint"], proc: "Soften rice paper in water. Wrap ingredients tightly and serve with peanut sauce." },
+
+            // BREAKFAST
+            { title: "Eggs Benedict", cat: "Breakfast", ing: ["English Muffin", "Poached Egg", "Hollandaise"], proc: "Toast muffin. Add ham and poached egg. Top with creamy hollandaise sauce." },
+            { title: "Belgian Waffles", cat: "Breakfast", ing: ["Waffle Mix", "Pearl Sugar", "Strawberries"], proc: "Cook batter in waffle iron until golden. Top with fresh berries and syrup." },
+            { title: "Shakshuka", cat: "Breakfast", ing: ["Eggs", "Tomato Sauce", "Peppers", "Cumin"], proc: "Simmer tomatoes and peppers. Crack eggs into sauce and poach until set." },
+            { title: "Breakfast Burrito", cat: "Breakfast", ing: ["Tortilla", "Scrambled Eggs", "Chorizo", "Cheese"], proc: "Sauté chorizo. Wrap eggs, meat, and cheese in a warm tortilla." },
+            { title: "Acai Bowl", cat: "Breakfast", ing: ["Acai Puree", "Granola", "Blueberries", "Honey"], proc: "Blend acai. Pour into bowl and top with crunchy granola and fresh fruit." },
+
+            // LUNCH
+            { title: "Caesar Salad", cat: "Lunch", ing: ["Romaine", "Croutons", "Parmesan", "Dressing"], proc: "Toss lettuce with dressing. Add croutons and a heavy sprinkle of cheese." },
+            { title: "Club Sandwich", cat: "Lunch", ing: ["Bread", "Turkey", "Bacon", "Lettuce", "Tomato"], proc: "Toast 3 slices of bread. Layer ingredients with mayo and cut into triangles." },
+            { title: "Tomato Soup", cat: "Lunch", ing: ["Tomatoes", "Onion", "Cream", "Basil"], proc: "Sauté onions, add tomatoes and simmer. Blend until smooth and stir in cream." },
+            { title: "Quinoa Bowl", cat: "Lunch", ing: ["Quinoa", "Chickpeas", "Spinach", "Lemon"], proc: "Cook quinoa. Mix with fresh spinach, chickpeas, and a lemon-tahini dressing." },
+            { title: "Tuna Melt", cat: "Lunch", ing: ["Tuna", "Mayo", "Sourdough", "Cheddar"], proc: "Mix tuna and mayo. Place on bread with cheese and grill until melted." },
+
+            // DINNER
+            { title: "Beef Wellington", cat: "Dinner", ing: ["Beef Fillet", "Puff Pastry", "Mushroom Duxelles"], proc: "Sear beef. Wrap in mushroom paste and pastry. Bake until golden brown." },
+            { title: "Chicken Alfredo", cat: "Dinner", ing: ["Fettuccine", "Chicken Breast", "Heavy Cream", "Garlic"], proc: "Cook pasta. Sauté chicken. Simmer cream and garlic, then toss everything together." },
+            { title: "Salmon Teriyaki", cat: "Dinner", ing: ["Salmon Fillet", "Soy Sauce", "Ginger", "Rice"], proc: "Glaze salmon with teriyaki. Pan-sear until flaky. Serve over steamed rice." },
+            { title: "Vegetable Curry", cat: "Dinner", ing: ["Coconut Milk", "Curry Powder", "Potato", "Cauliflower"], proc: "Simmer veggies in coconut milk and spices until tender. Serve with naan." },
+            { title: "Lamb Chops", cat: "Dinner", ing: ["Lamb", "Rosemary", "Garlic", "Butter"], proc: "Season lamb with rosemary. Sear in a hot pan with butter and garlic for 3-4 mins per side." }
+        ];
+
+        let currentCategory = "All";
+
+        function setCategory(cat, btn) {
+            currentCategory = cat;
+            
+            // UI: Update active button
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            generateRecipe();
+        }
+
+        function generateRecipe() {
+            // Filter the list based on selection
+            const filtered = currentCategory === "All" 
+                ? recipes 
+                : recipes.filter(r => r.cat === currentCategory);
+
+            // Pick random from filtered list
+            const recipe = filtered[Math.floor(Math.random() * filtered.length)];
+
+            // Inject into HTML
+            const display = document.getElementById('recipe-display');
+            display.innerHTML = `
+                <span class="cat-tag">${recipe.cat}</span>
+                <h2>${recipe.title}</h2>
+                <div class="recipe-content">
+                    <h3>Ingredients</h3>
+                    <ul class="ingredients">
+                        ${recipe.ing.map(i => `<li>${i}</li>`).join('')}
+                    </ul>
+                    <h3>How to Prepare</h3>
+                    <p class="procedure">${recipe.proc}</p>
+                </div>
+                <button class="refresh-btn" onclick="generateRecipe()">REFRESH</button>
+            `;
+        }
+
+        // Initialize
+        generateRecipe();
+    </script>
+</body>
+</html>
